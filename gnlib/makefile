@@ -48,7 +48,7 @@ install : $(GNLIB)
 	cp $(GNHEADERS) $(INCLUDEPATH)
 
 clean :
-	rm -f $(GNLIBOBJS) $(GNLIB) mdepend core
+	rm -f $(GNLIBOBJS) *.o $(GNLIB) mdepend core
 
 mdepend : objects
 	gcc -MM *.c > mdepend
