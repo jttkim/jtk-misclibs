@@ -81,10 +81,21 @@ static void draw_vnode_ps(FILE *f, const PHYLTREE_NODE *node, double xpos, doubl
     nl_descendant = phyl_num_leaves(node->descendant[i]);
     xpos_descendant = x0 + nl_descendant * node_distance * 0.5;
     ypos_descendant = ypos + length_scale * node->descendant[i]->length;
-    fprintf(f, "1 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
-    fprintf(f, "newpath %f %f moveto %f %f lineto\n",
-            xpos, ypos, xpos_descendant, ypos_descendant);
-    fprintf(f, "stroke\n");
+    if (node->descendant[i]->thick >= 0.0)
+    {
+      fprintf(f, "1 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto\n",
+	      xpos, ypos, xpos_descendant, ypos_descendant);
+      fprintf(f, "stroke\n");
+    }
+    else
+    {
+      fprintf(f, "gsave 1 0 0 setrgbcolor\n");
+      fprintf(f, "1 setlinecap %f setlinewidth\n", -node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto\n",
+	      xpos, ypos, xpos_descendant, ypos_descendant);
+      fprintf(f, "stroke grestore\n");
+    }
     draw_vnode_ps(f, node->descendant[i], xpos_descendant, ypos_descendant,
             x0, length_scale, node_distance, txt_yoffset, fontheight, psinfo);
     x0 += nl_descendant * node_distance;
@@ -126,9 +137,19 @@ static void draw_rnode_ps(FILE *f, const PHYLTREE_NODE *node, double xpos, doubl
       ym = ypos_descendant;
     else
       ym = ypos;
-    fprintf(f, "0 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
-    fprintf(f, "newpath %f %f moveto %f %f lineto stroke\n",
-            xpos_descendant, ypos, xpos_descendant, ypos_descendant);
+    if (node->descendant[i]->thick >= 0.0)
+    {
+      fprintf(f, "0 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto stroke\n",
+	      xpos_descendant, ypos, xpos_descendant, ypos_descendant);
+    }
+    else
+    {
+      fprintf(f, "gsave 1 0 0 setrgbcolor\n");
+      fprintf(f, "0 setlinecap %f setlinewidth\n", -node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto stroke grestore\n",
+	      xpos_descendant, ypos, xpos_descendant, ypos_descendant);
+    }
     if (psinfo->bootstrap_numtrees)
     {
       bootstrap_value = ((double) node->descendant[i]->edge_counter) / ((double) psinfo->bootstrap_numtrees);
@@ -303,9 +324,19 @@ static void draw_unode_ps(FILE *f, const PHYLTREE_NODE *node, double xpos, doubl
     angle_descendant = fmod(angle_descendant + ar_descendant * 0.5, 2 * PI);
     xpos_descendant = xpos + length_scale * node->descendant[i]->length * cos(angle_descendant);
     ypos_descendant = ypos + length_scale * node->descendant[i]->length * sin(angle_descendant);
-    fprintf(f, "1 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
-    fprintf(f, "newpath %f %f moveto %f %f lineto stroke\n",
-            xpos, ypos, xpos_descendant, ypos_descendant);
+    if (node->descendant[i]->thick >= 0.0)
+    {
+      fprintf(f, "1 setlinecap %f setlinewidth\n", node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto stroke\n",
+	      xpos, ypos, xpos_descendant, ypos_descendant);
+    }
+    else
+    {
+      fprintf(f, "gsave 1 0 0 setrgbcolor\n");
+      fprintf(f, "1 setlinecap %f setlinewidth\n", -node->descendant[i]->thick);
+      fprintf(f, "newpath %f %f moveto %f %f lineto stroke grestore\n",
+	      xpos, ypos, xpos_descendant, ypos_descendant);
+    }
     if (psinfo->bootstrap_numtrees)
     {
       bootstrap_value = ((double) node->descendant[i]->edge_counter) / ((double) psinfo->bootstrap_numtrees);

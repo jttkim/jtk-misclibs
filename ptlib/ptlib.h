@@ -1,6 +1,10 @@
-/* $Id: ptlib.h,v 1.2 2000/01/20 01:26:11 kim Exp $ */
+/* $Id: ptlib.h,v 1.3 2000/01/24 00:56:19 kim Exp $ */
 /*
  * $Log: ptlib.h,v $
+ * Revision 1.3  2000/01/24 00:56:19  kim
+ * added phyl_max_abs_thickness() function, implemented plotting edges with
+ * negative thickness in red
+ *
  * Revision 1.2  2000/01/20 01:26:11  kim
  * Created kludge: In phyl_topotreedist, edge lengths are written into
  * thickness of corresponding edges as a side effect.
@@ -27,6 +31,7 @@ extern long phyl_num_leaves(const PHYLTREE_NODE *node);
 extern long phyl_max_edgecounter(const PHYLTREE *ptree);
 extern double phyl_max_edgelength(const PHYLTREE *ptree);
 extern double phyl_max_thickness(const PHYLTREE *ptree);
+extern double phyl_max_abs_thickness(const PHYLTREE *ptree);
 extern int phyl_max_nodenamelength(const PHYLTREE *ptree, const PHYL_LEAFATTRIBUTE *attrlist);
 
 /* compute distance between nodes / leaves */
