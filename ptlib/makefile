@@ -1,4 +1,5 @@
 # Makefile for the phylogenetic tree library
+# $Id: makefile,v 1.2 2000/01/20 01:26:11 kim Exp $
 
 .PHONY : install
 
@@ -17,7 +18,8 @@ PTLIBOBJS = addnode.o  freetree.o numleavs.o prntstuf.o readtree.o \
             treehght.o treeinit.o setedges.o lendistr.o \
 	    maxedgc.o  maxnlen.o  leafattr.o ptdist.o   \
 	    leafdist.o leafset.o  maxlngth.o mergshrt.o setthick.o \
-	    inf2thck.o cnt2thck.o tre2thck.o constlen.o setminl.o
+	    inf2thck.o cnt2thck.o tre2thck.o constlen.o setminl.o \
+	    multhick.o maxthick.o
 
 INCLUDE = -I$(INCLUDEPATH)
 LIBS	= $(JKLIBS) $(STDLIBS)
@@ -40,4 +42,3 @@ mdepend :
 	$(CC) $(INCLUDE) -MM $(PTLIBOBJS:%.o=%.c) > mdepend
 
 include mdepend
-

@@ -1,3 +1,12 @@
+/* $Id: ptlib.h,v 1.2 2000/01/20 01:26:11 kim Exp $ */
+/*
+ * $Log: ptlib.h,v $
+ * Revision 1.2  2000/01/20 01:26:11  kim
+ * Created kludge: In phyl_topotreedist, edge lengths are written into
+ * thickness of corresponding edges as a side effect.
+ *
+ */
+
 #ifndef H_PTLIB
 #define H_PTLIB
 
@@ -17,6 +26,7 @@ extern void phyl_free_tree(PHYLTREE *tree);
 extern long phyl_num_leaves(const PHYLTREE_NODE *node);
 extern long phyl_max_edgecounter(const PHYLTREE *ptree);
 extern double phyl_max_edgelength(const PHYLTREE *ptree);
+extern double phyl_max_thickness(const PHYLTREE *ptree);
 extern int phyl_max_nodenamelength(const PHYLTREE *ptree, const PHYL_LEAFATTRIBUTE *attrlist);
 
 /* compute distance between nodes / leaves */
@@ -78,6 +88,8 @@ extern void phyl_set_minlength(PHYLTREE *ptree, double min_length);
 extern void phyl_set_thickness(PHYLTREE *ptree, double thickness);
 extern void phyl_set_edges(PHYLTREE *ptree, long edge_info, long edge_counter);
 extern void phyl_inf2thick(PHYLTREE *ptree, int thickinfo, double thick);
+extern void phyl_multiply_thick(PHYLTREE *ptree, double factor);
+
 extern void phyl_counter2thick(PHYLTREE *ptree, double thick);
 extern int phyl_tree2thick(PHYLTREE *tree1, const PHYLTREE *tree2, double max_thickness);
 

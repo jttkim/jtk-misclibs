@@ -1,3 +1,12 @@
+/* $Id: pttypes.h,v 1.2 2000/01/20 01:26:11 kim Exp $ */
+/*
+ * $Log: pttypes.h,v $
+ * Revision 1.2  2000/01/20 01:26:11  kim
+ * Created kludge: In phyl_topotreedist, edge lengths are written into
+ * thickness of corresponding edges as a side effect.
+ *
+ */
+
 #ifndef H_PHYLTYPS
 #define H_PHYLTYPS
 

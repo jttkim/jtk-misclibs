@@ -1,3 +1,12 @@
+/* $Id: treedist.c,v 1.2 2000/01/20 01:26:11 kim Exp $ */
+/*
+ * $Log: treedist.c,v $
+ * Revision 1.2  2000/01/20 01:26:11  kim
+ * Created kludge: In phyl_topotreedist, edge lengths are written into
+ * thickness of corresponding edges as a side effect.
+ *
+ */
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,6 +19,7 @@ long phyl_topotreedist(PHYLTREE *tree1, PHYLTREE *tree2)
   char     *set1_flags, *set2_flags;
   long i, num_edges1, num_edges2, edge1, edge2, e, d, similarity;
   int ec;
+  double edge1_length, edge2_length;
 
   if ((tree1->num_leaves == 0) || (tree2->num_leaves == 0))
     return (PHYLERR_NOLEAVES);
@@ -100,16 +110,24 @@ long phyl_topotreedist(PHYLTREE *tree1, PHYLTREE *tree2)
       printf("identical leaf set:\n");
       print_set(set1 + edge1, tree1->leaf);
 */
+      /*
+       * Kludge: set thickness values for all matching edges in tree #1 to
+       * length of first matching edge in tree2 and vice versa.
+       */
+      edge1_length = set1[edge1].node->length;
+      edge2_length = set2[edge2].node->length;
       e = edge1;
       while ((edge1 < num_edges1) && !memcmp(set1[edge1].flag, set1[e].flag, tree1->num_leaves))
       {
 	set1[edge1].node->edge_info = PHYLEDGINF_IDEDGE;
+	set1[edge1].node->thick = edge2_length;
 	(set1[edge1++].node->edge_counter)++;
       }
       e = edge2;
       while ((edge2 < num_edges2) && !memcmp(set2[edge2].flag, set2[e].flag, tree2->num_leaves))
       {
 	set2[edge2].node->edge_info = PHYLEDGINF_IDEDGE;
+	set2[edge2].node->thick = edge1_length;
 	(set2[edge2++].node->edge_counter)++;
       }
     }
@@ -121,4 +139,3 @@ long phyl_topotreedist(PHYLTREE *tree1, PHYLTREE *tree2)
   free(set2_flags);
   return (d);
 }
-
