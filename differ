@@ -1,0 +1,14 @@
+for i in `ls` ; do
+  if test -d $i ; then
+    for j in `ls ${i}/*` ; do
+      if test -r ../libs_old/${j} ; then
+	if diff $j ../libs_old/${j} > /dev/null ; then
+	  true
+	else
+	  echo $j
+	fi
+      fi
+    done
+  fi
+done
+

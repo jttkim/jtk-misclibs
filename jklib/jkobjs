@@ -1,0 +1,4 @@
+JKLIBOBJS = chrtohex.o editdist.o hextochr.o shannons.o shannonl.o \
+	    comphist.o comphstl.o hexval.o   psstring.o linefile.o \
+	    pspagehd.o binfile.o  mathext.o  numbits.o  huffman.o
+

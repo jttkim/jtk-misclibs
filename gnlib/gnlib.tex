@@ -1,0 +1,477 @@
+\documentclass[a4paper, fleqn]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[german]{babel}
+
+\sloppy
+
+
+\begin{document}
+
+\section{Evolutionsmodelle und \texttt{gnlib}}
+
+\texttt{gnlib} ist eine \textsl{library}, die Funktionen zum Erfassen,
+Speichern, Laden und Visualisieren von Stammb"aumen in Computersimulationen
+von Evolutionsprozessen zur Verf"ugung stellt. Um Computersimulationen
+mit \texttt{gnlib} zu untersuchen, sind einige, wenige Modifikationen
+des Simulationsprogramms erforderlich. Das Programm kann dann zu jedem
+gew"unschten Zeitpunkt den Stammbaum der Individuen in unterschiedlichen
+Formaten abspeichern. An Formaten stehen hier das New Hampshire format,
+das bei Software zur Rekonstruktion von Stammb"aumen ein g"angiger Standard
+ist, sowie ein \texttt{gnlib}-eigenes Format zur Verf"ugung. Zur
+Weiterverarbeitung der im \texttt{gnlib}-Format gespeicherten Stammb"aume
+stehen verschiedene tools zur Verf"ugung. Weiterhin werden durch \texttt{gnlib}
+einige Funktionen zur online-Analyse des phylogenetischen Prozesses
+bereitgestellt.
+
+
+\subsection{Erweiterung von Computersimulationen mit \texttt{gnlib}}
+\label{function_overview}
+
+Folgende Ver"anderungen am Programm sind f"ur Untersuchungen mit \texttt{gnlib}
+erforderlich:
+
+\begin{enumerate}
+
+\item F"ur jeden Evolutionsproze"s mu"s ein \textsl{struct} des Typs
+    \verb|GN_TREE| angelegt werden. Vor der ersten Verwendung dieser
+    Struktur mu"s sie mittels der Funktion \verb|gn_init_tree|
+    initialisiert werden.
+
+\item F"ur jedes Individuum mu"s ein \textsl{struct} des Typs
+    \verb|GN_NODE_ID| angelegt werden. In dieser Struktur wird
+    durch die \texttt{gnlib} eine Identifikation (im Folgenden auch als
+    ID bezeichnet) f"ur das entsprechende
+    Individuum angelegt, anhand derer das Individuum bei sp"ateren
+    Aufrufen von \texttt{gnlib}-Funktionen wiedererkannt wird.
+
+\item Bei jeder Erzeugung eines neuen Individuums mu"s die Funktion
+    \verb|gn_new_treenode| aufgerufen werden. Durch diesen Aufruf wird
+    das neu erzeugte Individuum in den Stammbaum "`eingebaut"'. Der
+    Stammbaum, zu dem das Individuum geh"ort, sein Elter sowie sein
+    Genom werden bei diesem Aufruf als Argumente "ubergeben.
+
+\item Beim jedem Absterben eines Individuums mu"s die Funktion
+    \verb|gn_node_death| aufgerufen werden.
+
+\item Beim Abspeichern des Simulationszustands m"ussen sowohl der
+    Stammbaum sowie die IDs aller abgespeicherten Individuen mitgesichert
+    werden. Diese Information mu"s dann bei der Fortsetzung des
+    Simulations aus dem entsprechende File wieder eingelesen werden.
+    Zur Realisierung dieses Vorgehens in C++ werden die Operatoren
+    \verb|<<| und \verb|>>| f"ur die genannten Datentypen
+    \verb|GN_TREE| und \verb|GN_NODE_ID| bereitgestellt.
+
+\end{enumerate}
+
+Diese Funktionen werden im Folgenden n"aher erl"autert.
+
+
+\subsubsection{\texttt{gn\_init\_tree}}
+\label{gn_init_tree}
+
+\begin{verbatim}
+extern void gn_init_tree(GN_TREE *gtree);
+\end{verbatim}
+
+Diese Funktion initialisiert die \verb|GN_TREE| Struktur so, da"s sie
+einen leeren Stammbaum enth"alt. Das Argument \verb|gtree| ist ein
+\textsl{pointer} auf die zu initialisierende Struktur.
+\verb|gn_init_tree| sollte f"ur jede \verb|GN_TREE| Struktur aufgerufen
+werden, bevor sie zum ersten Mal mit den in den folgenden Abschnitten
+beschriebenen Funktionen verwendet wird.
+
+Eine einmal verwendete \verb|GN_TREE| Struktur darf nicht mit
+\verb|gn_init_tree| initialisiert werden, bevor der durch den an dieser Struktur
+"`h"angenden"' Stammbaum belegte Speicher mit \verb|gn_free_tree|
+(s.\ \ref{gn_free_tree}) freigegeben wurde.
+
+Unmittelbar nach dem Aufruf von \verb|gn_init_tree||, in jedem Fall aber
+vor der ersten Verwendung der initialisierten Struktur, kann die Strategie zum
+Entfernen von "abgestorbenen Teilen" des Stammbaums, also von Teilb"aumen,
+die keine rezenten Individuen mehr enthalten, festgelegt werden. Standardm"a"sig
+werden alle Knoten aus dem Baum entfernt, die zu nicht mehr lebenden Individuen
+geh"oren und die nur noch mit einem Teilbaum, der zu lebenden Individuen
+geh"orende Knoten enth"alt, verbunden sind. Diese Knoten werden als
+"`Monolinks"' bezeichnet. Durch das Entfernen solcher Monolinks werden nur
+Knoten, bei denen eine Bifurkation der Genealogie vorliegt, erhalten; eine
+Rekonstruktion der Gesamtmenge aller Vorfahren eines rezenten Individuums
+ist nicht m"oglich. Dieses Vorgehen stellt jedoch sicher, da"s die Anzahl
+der im Speicher befindlichen Knoten das Doppelte der aktuellen Populationsgr"o"se
+nicht "uberschreiten kann.
+
+Soll die M"oglichkeit zur Extraktion vollst"andiger genealogischer Linien
+erhalten werden, mu"s vor der Verwendung der initialisierten \verb|GN_TREE|
+Struktur die Komponente \verb|pruning_strategy| auf den konstanten Wert
+\verb|GN_PRUNE_DEAD| gesetzt werden. Bei dieser Strategie ist mit einem
+Anwachsen der Anzahl im Hauptspeicher gehaltenen Knoten im Verlauf der
+Simulation zu rechnen.
+
+
+\subsubsection{\texttt{gn\_free\_tree}}
+\label{gn_free_tree}
+
+\begin{verbatim}
+extern int gn_free_tree(GN_TREE *gtree);
+\end{verbatim}
+
+Durch diese Funktion werden alle Speicherbl"ocke, die durch Knoten der
+"ubergebenen \verb|GN_TREE| Struktur belegt werden, wieder
+freigegeben.  Das Argument \verb|gtree| ist ein \textsl{pointer} auf
+Struktur, deren Knoten gel"oscht werden sollen.  Das \textsl{struct}
+selbst wird nat"urlich nicht mit \verb|free()| freigegeben, so da"s
+\textsl{structs}, die als lokale oder globale Variablen definiert
+wurden, verwendet werden k"onnen.
+
+Nach dem Aufruf von \verb|gn_free_tree| d"urfen keine \verb|GN_NODE_ID|
+Strukturen, die zu dem gel"oschten Baum geh"oren, mehr bei weiteren
+\texttt{gnlib}-Aufrufen verwendet werden.
+
+
+\subsubsection{\texttt{gn\_new\_treenode}}
+\label{gn_new_treenode}
+
+\begin{verbatim}
+extern int gn_new_treenode(GN_TREE *gtree,
+        const GN_NODE_ID *p_ancestor_id, long generation,
+        const char *name, const char *genome,
+        GN_NODE_ID *new_nid);
+\end{verbatim}
+
+Mit dieser Funktion wird ein neuer Knoten in einen bestehenden Stammbaum
+eingesetzt. Die Argumente sind:
+
+\begin{description}
+
+\item[gn\_tree:] \textsl{Pointer} auf den Stammbaum (genaugenommen: das
+    \verb|GN_TREE| \textsl{struct}, das den Stammbaum beschreibt), zu dem
+    ein Individuum hinzugef"ugt werden soll.
+
+\item[p\_ancestor\_id:] \textsl{Pointer} auf die ID des Elternindividuums.
+    Dieses Argument darf den Wert \verb|NULL| haben, in diesem Fall wird
+    das Individuum als Urahn eines neuen Teilbaums betrachtet. Dies ist
+    typischerweise f"ur Individuen, die beim Start eines Simulationslaufs
+    erzeugt werden, sinnvoll.
+
+\item[generation:] Dieses Argument gibt den Zeitschritt (innerhalb der Simulation)
+    an, in dem das Individuum erzeugt wird. Da \verb|generation| in der
+    vorliegenden Implementation den Typ \verb|long| hat, ist die \texttt{gnlib}
+    derzeit nur f"ur Simulationen mit ganzzahligen, diskreten Zeitschritten
+    geeignet.
+
+\item[name:] Hier kann ein Name f"ur das Individuum angegeben werden, der bei
+    der Ausgabe und Visualisierung der Stammb"aume verwendet werde soll.
+    Wird hier ein Nullpointer oder ein Leerstring "ubergeben, generieren die
+    \texttt{gnlib}-Funktionen bei Bedarf einen Namen aus der \verb|GN_NODE_ID|.
+    Die L"ange des Namens darf maximal die Konstanten \verb|GN_MAX_NODENAME_LENGTH|
+    erreichen.
+
+\item[genome:] Hier kann ein beliebig langer, nullterminierter String "ubergeben
+    werden, der das Genom, oder die relevante genetische Konstitution oder
+    Vergleichbares beschreibt.
+
+\item[new\_nid:] \textsl{Pointer} auf eine \verb|GN_NODE_ID| Struktur, in der
+    die ID des neuen Individuums angelegt wird. Diese Struktur mu"s vom
+    aufrufenden Programm bereitgestellt werden, und ein \textsl{Pointer}
+    auf diese Struktur mu"s bei Aufrufen von \verb|gn_new_treenode| (wenn das
+    neu erzeugte Individuum sich seinerseits vermehrt) und beim Aufruf von
+    \verb|gn_node_death| (s.\ \ref{gn_node_death}) beim Absterben des Individuums
+    "ubergeben werden.
+
+\end{description}
+
+\verb|gn_new_treenode| sollte f"ur jedes Individuum aufgerufen werden, das
+tats"achlich in die Population aufgenommen wird. Ein Aufruf beim Erzeugen von
+Strukturen, die zur tempor"aren Zwischenspeicherung von Individuen oder
+Vergleichbarem dienen, sollte dagegen vermieden werden. F"ur jedes Individuum,
+f"ur das mit \verb|gn_new_treenode| ein Stammbaumknoten angelegt wurde, sollte
+sp"ater auch \verb|gn_node_death| (s.\ \ref{gn_node_death}) aufgerufen werden,
+um akkurate Stammb"aume zu erhalten und um eine unn"otige Belastung der
+Speicherresourcen zu vermeiden.
+
+
+\subsubsection{\texttt{gn\_node\_death}}
+\label{gn_node_death}
+
+\begin{verbatim}
+extern int gn_node_death(GN_TREE *gtree, const GN_NODE_ID *gn_nid,
+        long death_generation);
+\end{verbatim}
+
+Diese Funktion mu"s aufgerufen werden, wenn ein Individuum, zu dem mit
+\verb|gn_new_treenode| ein Knoten im Stammbaum erzeugt wurde, stirbt. Die
+Argumente sind:
+
+\begin{description}
+
+\item[gn\_tree:] \textsl{Pointer} auf den Stammbaum, zu dem das gestorbene
+    Individuum geh"ort.
+
+\item[gn\_nid:] \textsl{Pointer} auf die ID des gestorbenen Individuums.
+
+\item[generation:] Dieses Argument gibt den Zeitschritt (innerhalb der Simulation)
+    an, in dem das Individuum stirbt. Anhand dieses Arguments berechnet
+    die \texttt{gnlib} die Spanne, die das Individuum "uberlebt hat.
+
+\end{description}
+
+Der Aufruf von \verb|gn_node_death| verursacht (abh"angig von der
+\verb|pruning_strategy| des Stammbaums) die Freigabe des Speichers
+des Knotens. Daher darf die Knoten-ID eines Individuums nach dem Aufruf
+von \verb|gn_node_death| nicht mehr als Eltern-ID bei \verb|gn_new_treenode|
+"ubergeben werden.
+
+
+\subsubsection{\texttt{gn\_tree\_height}}
+\label{gn_tree_height}
+
+\begin{verbatim}
+extern long gn_tree_height(const GN_TREE *gtree, long generation);
+\end{verbatim}
+
+Diese Funktion berechnet die H"ohe des Stammbaums, also den zeitlichen Abstand
+zwischen der am weitesten zur"uckliegenden genealogischen Bifurkation und
+der aktuellen Zeit. Die Argumente sind:
+
+\begin{description}
+
+\item[gn\_tree:] \textsl{Pointer} auf den Stammbaum, dessen H"ohe ermittelt werden
+    soll.
+
+\item[generation:] Aktueller Zeitschritt.
+
+\end{description}
+
+
+\subsubsection{\texttt{gn\_tree\_length}}
+\label{gn_tree_length}
+
+\begin{verbatim}
+extern long gn_tree_length(const GN_TREE *gtree, long generation);
+\end{verbatim}
+
+Diese Funktion berechnet die L"ange des Stammbaums; diese ist definiert als
+die Summe aller Kanten im Stammbaum, wobei die zur untersten Bifurkation
+hinf"uhrenden Kanten nicht mitgez"ahlt werden. Die Argumente sind wie bei
+\verb|gn_tree_height| (s.\ \ref{gn_tree_height}).
+
+
+\subsubsection{\texttt{gn\_ddc}}
+\label{gn_ddc}
+
+\begin{verbatim}
+extern double gn_ddc(const GN_TREE *gtree, long generation);
+\end{verbatim}
+
+Diese Funktion berechnet die Distanzverteilungskomplexit"at der rezenten
+Population, wobei als Distanzma"s die phylogenetische Distanz, also die
+Zeit, die seit der Bifurkation der zu zwei unterschiedlichen, rezenten Arten
+hinf"uhrenden Teilb"aumen vergangen ist. Die Argumente sind wie bei
+\verb|gn_tree_height| (s.\ \ref{gn_tree_height}).
+
+\subsection{Weitere Analyse und Visualisierung gespeicherter Stammb"aume}
+
+
+\subsubsection{\texttt{gn\_ostream\_ddistribution\_rle}}
+
+\begin{verbatim}
+extern double gn_ddc(const GN_TREE *gtree, long generation, ostream &s);
+\end{verbatim}
+
+Diese Funktion gibt die Verteilung der phylogenetischen Distanzen
+(vgl.\ \ref{gn_ddc}) auf dem durch das dritte Argument angegebenen
+Ausgabe-\textsl{stream} aus. Die ersten beiden Argumente sind wie bei
+\verb|gn_ddc| (s.\ \ref{gn_ddc}). Die Distanzverteilung wird dabei
+durch \textsl{run length encoding} komprimiert, indem bei einer Folge
+von $n$ aufeinanderfolgenden gleichen H"aufigkeitswerten $x$ nicht
+$n$-mal die Zahl $x$, sondern die Zahlen $-n$ und $x$ ausgegeben werden
+(bei $n > 2$).
+
+
+\subsection{Weitere Analyse und Visualisierung gespeicherter Stammb"aume}
+
+Zur weiteren Verarbeitung von Stammb"aumen, die mittels des in \ref{function_overview}
+angesprochenen Operators zum Abspeichern in Files geschrieben wurden, stehen folgende
+Programme zur Verf"ugung:
+
+\begin{enumerate}
+
+\item \verb|gnhx|: Extrahiert die genealogischen Linien aller rezenten Individuen
+
+\item \verb|gnps|: Erzeugt PostScript-Graphiken der Stammb"aume, wobei die einzelnen
+    Knoten in Abh"angigkeit von aus dem Genom entnommenen Werten grau get"ont
+    werden k"onnen.
+
+\item \verb|gnps_tragic|: Erzeugt ebenfalls PostScript Graphiken von Stammb"aumen,
+    bei dem die Graut"onung in Abh"angigkeit von der potentiellen H"ohe
+    erfolgt.
+
+\item \verb|strattree|: Ein Script, das aus einem Stammbaumfile mithilfe der
+    o.g.\ Programme verschiedene PostScript-Graphiken sowie eine Reihe von
+    mit \verb|gnuplot| visualisierbaren Daten erzeugt.
+
+\end{enumerate}
+
+Bei allen genannten Programmen kann jedes File, das einen Stammbaum enth"alt,
+als Eingabe verwendet werden. Im Speziellen k"onnen die mit \verb|SGM3D| erzeugten
+\textsl{resolution files} direkt verarbeitet werden. Dies ist deshalb m"oglich,
+weil beim Einlesen alle Daten bis zum Auftreten einer Stammbaumanfangskennung
+ignoriert ("`weggelesen"') werden. Daten, die dem abgespeicherten Stammbaum
+folgen, werden gar nicht erst eingelesen. Daher ist es derzeit nicht m"oglich,
+Files mit mehreren Stammb"aumen zu verarbeiten, dies kann jedoch durch relativ
+einfache Erweiterungen des Codes bei Bedarf erreicht werden. Alle genannten
+Programme erwarten einige auf der Kommandozeile "ubergebene Argumente in fester
+Reihenfolge, wobei in einigen F"allen beim Fehlen der letzten Argumente \textsl{defaults}
+verwendet werden. Das erste Argument ist stets der Name des Files, das den
+Stammbaum enth"alt. Die Verwendung der Programme wird im Folgenden beschrieben.
+
+
+\subsubsection{gnhx}
+\label{gnhx}
+
+\begin{verbatim}
+gnhx <gntree file> <output file basename>
+\end{verbatim}
+
+Dieses Programm erzeugt aus dem Stammbaum f"ur jedes rezente Individuum eine
+Genealogieliste. Diese enth"alt f"ur das betreffende Individuum sowie f"ur alle
+seine Vorfahren jeweils eine Zeile, in der der Zeitschritt der Entstehung (Geburt),
+die ID des Individuums sowie sein Genom enthalten sind. F"ur jedes Individuum wird
+ein solches File angelegt. Die Namen dieser Files haben die Form
+\verb|basename_|\textsl{nnnn}\verb|.gls|, wobei \textsl{nnnn} f"ur eine
+vierstellige Dezimalzahl steht. Ein solches \textsl{"`genealogy listing"'}
+aus \verb|SGM3D| hat die folgende Form:
+
+\begin{verbatim}
+# genealogy list of individual "g2957-0" from file FirstTest.r3000
+2957 (ID: g2957-0): A0: -9.89313, A1: 4.7706, A2: -0.5624, R2H: 0.95600
+2848 (ID: g2848-0): A0: -9.89313, A1: 4.9109, A2: -0.5624, R2H: 0.95600
+2782 (ID: g2782-0): A0: -9.89313, A1: 4.9109, A2: -0.5624, R2H: 0.93834
+2724 (ID: g2724-0): A0: -9.53186, A1: 4.9109, A2: -0.5624, R2H: 0.93834
+2624 (ID: g2624-0): A0: -9.53186, A1: 5.0907, A2: -0.5624, R2H: 0.93834
+2595 (ID: g2595-0): A0: -9.80306, A1: 5.0907, A2: -0.5624, R2H: 0.93834
+2560 (ID: g2560-0): A0: -9.80306, A1: 5.2289, A2: -0.5624, R2H: 0.93834
+2517 (ID: g2517-0): A0: -10.1994, A1: 5.2289, A2: -0.5624, R2H: 0.93834
+2423 (ID: g2423-0): A0: -10.1994, A1: 5.2825, A2: -0.5624, R2H: 0.93834
+
+[...]
+
+\end{verbatim}
+
+Diese Files k"onnen zur Vermittlung eines Eindrucks der Evolutionsdynamik dienen;
+insbesondere eignen sie sich jedoch zur Weiterverarbeitung zu Datenfiles f"ur
+\verb|gnuplot|.
+
+
+\subsubsection{gnps}
+\label{gnps}
+
+
+\subsubsection{gnps\_tragic}
+\label{gnps_tragic}
+
+
+\end{document}
+
+#ifndef H_GNLIB
+#define H_GNLIB
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <iostream.h>
+#include <fstream.h>
+#include <stdio.h>  /* necessary for definition of FILE */
+#include "gndefs.h"  // jan
+#include "gntypes.h" // jan
+
+/*
+ * Functions to init and discard trees.
+ */
+
+extern int gn_free_tree(GN_TREE *gtree);
+extern void gn_init_tree(GN_TREE *gtree);
+
+/*
+ * Compute genealogical distance
+ */
+
+extern long gn_distance(const GN_TREE *gtree, GN_NODE *p1, GN_NODE *p2, long g);
+
+/*
+ * Create new nodes and update upon death
+ */
+
+extern int gn_new_treenode(GN_TREE *gtree, const GN_NODE_ID *p_ancestor_id, long generation, const char *name, const char *genome, GN_NODE_ID *new_nid);
+extern int gn_node_death(GN_TREE *gtree, const GN_NODE_ID *gn_nid, long death_generation);
+
+/*
+ * Generate unique string identifying a node
+ */
+
+extern char *gn_node_idstring(const GN_NODE_ID *id, char *buf);
+
+/*
+ * Copy a genealogy tree in memory
+ */
+
+extern int gn_copy_tree(GN_TREE *target, const GN_TREE *source);
+
+/*
+ * Print a PHYLIP compatible representation of current tree
+ */
+
+extern int gn_print_jftrees(const GN_TREE *gtree, long generation, FILE *f);
+extern int gn_fprint_history(const GN_TREE *gtree, FILE *f, const GN_NODE_ID *id);
+extern int gn_fprint_postscript(const GN_TREE *gtree, FILE *f, long generation, double width, double height, double fontheight, const char *label);
+
+/*
+ * Save and restore a tree to a file
+ */
+
+extern int gn_read_tree(GN_TREE *gtree, FILE *f);
+extern int gn_save_tree(const GN_TREE *gtree, FILE *f);
+
+/*
+ * Save and restore node IDs to a file
+ */
+
+extern int gn_read_id(GN_NODE_ID *gn_nid, FILE *f);
+extern int gn_save_id(const GN_NODE_ID *gn_nid, FILE *f);
+
+/*
+ * determine some statistics of tree
+ */
+
+
+extern long gn_tree_height(const GN_TREE *gtree, long generation);
+extern long gn_tree_length(const GN_TREE *gtree, long generation);
+extern double gn_ddc(const GN_TREE *gtree, long generation);
+
+/*
+ * dump node contents to stdout, for debugging purposes
+ */
+
+extern int gn_print_node(const GN_NODE *gn);
+extern int gn_print_subtree(const GN_NODE *gn);
+extern int gn_print_tree(const GN_TREE *gtree);
+
+#ifdef __cplusplus
+}
+
+extern ostream &operator << (ostream &s, const GN_NODE_ID &nid);
+extern istream &operator >> (istream &s, GN_NODE_ID &nid);
+extern ostream &operator << (ostream &s, const GN_TREE &gn_tree);
+
+extern istream &operator >> (istream &s, GN_TREE &gn_tree);
+
+extern int gn_ostream_jftrees(const GN_TREE *gtree, long generation, ostream &s);
+extern int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, ostream &s);
+
+#endif
+
+
+#endif
+

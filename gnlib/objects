@@ -1,0 +1,10 @@
+OBJECTS = example.o inout.o indiv.o sim.o gnhx.o gnps.o gnps_tragic.o
+
+GNLIBOBJS = addnlst.o  addttree.o findgnod.o fregnlst.o fregtree.o \
+	    gndstnce.o jf_tree.o  noddeath.o prntgnod.o prntgtre.o \
+	    initgntr.o rmfnlst.o  rmftree.o  sprnname.o trimbran.o \
+	    readgnid.o readgntr.o savegnid.o savegntr.o newgntrn.o \
+	    prnttree.o nidstrng.o copytree.o gnstat.o   gnhistry.o \
+	    pscript.o  \
+	    gnstream.o 
+
