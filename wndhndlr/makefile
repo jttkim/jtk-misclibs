@@ -33,7 +33,7 @@ install : $(WHNDLRLIB)
 	cp $(PTHEADERS) $(INCLUDEPATH)
 
 clean :
-	rm -f $(WHNDLRLIBOBJS) $(WHNDLRLIB) mdepend core
+	rm -f $(WHNDLRLIBOBJS) whtest.o $(WHNDLRLIB) mdepend core
 
 mdepend :
 	gcc $(INCLUDE) -MM $(WHNDLRLIBOBJS:%.o=%.c) > mdepend
