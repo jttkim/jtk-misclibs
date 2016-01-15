@@ -8,8 +8,8 @@
 
 #ifdef __cplusplus
 
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 
 extern "C" {
 
@@ -89,17 +89,16 @@ extern int gn_print_tree(const GN_TREE *gtree);
 #ifdef __cplusplus
 }
 
-extern ostream &operator << (ostream &s, const GN_NODE_ID &nid);
-extern istream &operator >> (istream &s, GN_NODE_ID &nid);
-extern ostream &operator << (ostream &s, const GN_TREE &gn_tree);
+extern std::ostream &operator << (std::ostream &s, const GN_NODE_ID &nid);
+extern std::istream &operator >> (std::istream &s, GN_NODE_ID &nid);
+extern std::ostream &operator << (std::ostream &s, const GN_TREE &gn_tree);
 
-extern istream &operator >> (istream &s, GN_TREE &gn_tree);
+extern std::istream &operator >> (std::istream &s, GN_TREE &gn_tree);
 
-extern int gn_ostream_jftrees(const GN_TREE *gtree, long generation, ostream &s);
-extern int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, ostream &s);
-
-#endif
-
+extern int gn_ostream_jftrees(const GN_TREE *gtree, long generation, std::ostream &s);
+extern int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, std::ostream &s);
 
 #endif
 
+
+#endif

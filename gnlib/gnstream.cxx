@@ -1,5 +1,5 @@
 #include <ctype.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +15,7 @@ static int gn_defined_id(const GN_NODE_ID *id)
 }
 
 
-int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, ostream &s)
+int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, std::ostream &s)
 {
   long res, d, i, *dd, rle_length;
   GN_NODELIST_ELEMENT *gl, *gl1;
@@ -23,14 +23,14 @@ int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, ostream 
   res = gn_tree_height(gtree, generation);
   if (res <= 0)
   {
-    s << 0 << endl;
+    s << 0 << std::endl;
     return (0);
   }
   res++;
   dd = (long *) malloc(res * sizeof(long));
   if (dd == NULL)
   {
-    s << 0 << endl;
+    s << 0 << std::endl;
     return (GNERR_MEM);
   }
   for (d = 0; d < res; d++)
@@ -59,22 +59,22 @@ int gn_ostream_ddistribution_rle(const GN_TREE *gtree, long generation, ostream 
     else
       dd[rle_length++] = dd[d];
   }
-  s << rle_length << endl;
+  s << rle_length << std::endl;
   for (i = 0; i < rle_length; i++)
-    s << dd[i] << endl;
+    s << dd[i] << std::endl;
   free(dd);
   return (0);
 }
 
 
-int gn_ostream_jftrees(const GN_TREE *gtree, long generation, ostream &s)
+int gn_ostream_jftrees(const GN_TREE *gtree, long generation, std::ostream &s)
 {
   GN_NODELIST_ELEMENT *gl;
   char *treestring;
   long num_rootnodes;
 
   if (!s.good())
-    cerr << "gnlib warning: writing New Hampshire tree to stream that is not good" << endl;
+    std::cerr << "gnlib warning: writing New Hampshire tree to stream that is not good" << std::endl;
   num_rootnodes = 0;
   gl = gtree->root_list;
   while (gl)
@@ -82,19 +82,19 @@ int gn_ostream_jftrees(const GN_TREE *gtree, long generation, ostream &s)
     num_rootnodes++;
     gl = gl->next;
   }
-  s << num_rootnodes << endl;
+  s << num_rootnodes << std::endl;
   gl = gtree->root_list;
   while (gl)
   {
     treestring = gn_jf_treespec(gl->gnode, generation);
     if (treestring)
     {
-      s << treestring << endl;
+      s << treestring << std::endl;
       free(treestring);
     }
     else
     {
-      // cerr << "gn_ostream_jftrees: No treestring produced (generation " << generation << ')' << endl;
+      // std::cerr << "gn_ostream_jftrees: No treestring produced (generation " << generation << ')' << std::endl;
       return (GNERR_MEM);
     }
     gl = gl->next;
@@ -103,76 +103,76 @@ int gn_ostream_jftrees(const GN_TREE *gtree, long generation, ostream &s)
 }
 
 
-ostream &operator << (ostream &s, const GN_NODE_ID &nid)
+std::ostream &operator << (std::ostream &s, const GN_NODE_ID &nid)
 {
   if (!s.good())
-    cerr << "gnlib warning: writing ID to stream that is not good" << endl;
-  // s << "---------------" << endl;
-  s << nid.generation << endl;
-  s << nid.id << endl;
-  // s << "- - - - - - - -" << endl;
+    std::cerr << "gnlib warning: writing ID to stream that is not good" << std::endl;
+  // s << "---------------" << std::endl;
+  s << nid.generation << std::endl;
+  s << nid.id << std::endl;
+  // s << "- - - - - - - -" << std::endl;
   return (s);
 }
 
 
-istream &operator >> (istream &s, GN_NODE_ID &nid)
+std::istream &operator >> (std::istream &s, GN_NODE_ID &nid)
 {
   GN_NODE_ID n;
   char buf[256];
 
   if (!s.good())
-    cerr << "gnlib warning: reading ID from stream that is not good" << endl;
+    std::cerr << "gnlib warning: reading ID from stream that is not good" << std::endl;
   skip_newline(s);
   // s.get(buf, 256, '\n');  // read separator
-  // cerr << "GN_NODE_ID >> buf = \"" << buf << "\"" << endl;
+  // std::cerr << "GN_NODE_ID >> buf = \"" << buf << "\"" << std::endl;
   skip_newline(s);
   s.get(buf, 256, '\n');
   if (buf[0] == '!')
   {
     n.id = -1;
-    // cerr << "GN_NODE_ID >> undefined ID" << endl;
+    // std::cerr << "GN_NODE_ID >> undefined ID" << std::endl;
   }
   else
   {
     n.generation = strtol(buf, NULL, 10);
     s >> n.id;
-    // cerr << "GN_NODE_ID >> generation: " << n.generation << ", id: " << n.id << endl;
+    // std::cerr << "GN_NODE_ID >> generation: " << n.generation << ", id: " << n.id << std::endl;
   }
   skip_newline(s);
   // s.get(buf, 256, '\n');  // read separator
-  // cerr << "GN_NODE_ID >> buf = \"" << buf << "\"" << endl;
+  // std::cerr << "GN_NODE_ID >> buf = \"" << buf << "\"" << std::endl;
   nid = n;
   return (s);
 }
 
 
-static ostream &operator << (ostream &s, GN_NODE *gn)
+static std::ostream &operator << (std::ostream &s, GN_NODE *gn)
 {
   long i;
 
   if (!s.good())
-    cerr << "gnlib warning: writing node to stream that is not good" << endl;
+    std::cerr << "gnlib warning: writing node to stream that is not good" << std::endl;
   s << gn->node_id;
   if (gn->ancestor)
          s << gn->ancestor->node_id;
   else
   {
-    // s << "-------------" << endl;
-    s << '!' << endl;
-    // s << "- - - - - - -" << endl;
+    // s << "-------------" << std::endl;
+    s << '!' << std::endl;
+    // s << "- - - - - - -" << std::endl;
   }
-  s << gn->branch_generation << endl;
-  s << gn->num_offspring << endl;
-  s << gn->lifespan << endl;
-  s << gn->num_alive << endl;
-  s << gn->name << endl;
+  s << gn->branch_generation << std::endl;
+  s << gn->num_offspring << std::endl;
+  s << gn->lifespan << std::endl;
+  s << gn->num_alive << std::endl;
+  s << gn->name << std::endl;
   if (gn->genome)
   {
-    s << strlen(gn->genome) << endl;
-    s << gn->genome << endl;
+    s << strlen(gn->genome) << std::endl;
+    s << gn->genome << std::endl;
   }
   else
-    s << "0" << endl;
+    s << "0" << std::endl;
   for (i = 0; i < gn->offspring_arrsize; i++)
   {
     if (gn->offspring[i])
@@ -182,17 +182,17 @@ static ostream &operator << (ostream &s, GN_NODE *gn)
 }
 
 
-ostream &operator << (ostream &s, const GN_TREE &gn_tree)
+std::ostream &operator << (std::ostream &s, const GN_TREE &gn_tree)
 {
   GN_NODELIST_ELEMENT *gl;
   long num_rootnodes;
 
   if (!s.good())
-    cerr << "gnlib warning: writing tree to stream that is not good" << endl;
-  s << "BEGIN STORED PHYLO TREE" << endl;
-  s << gn_tree.pruning_strategy << endl;
-  s << gn_tree.num_nodes << endl;
-  s << gn_tree.num_alive << endl;
+    std::cerr << "gnlib warning: writing tree to stream that is not good" << std::endl;
+  s << "BEGIN STORED PHYLO TREE" << std::endl;
+  s << gn_tree.pruning_strategy << std::endl;
+  s << gn_tree.num_nodes << std::endl;
+  s << gn_tree.num_alive << std::endl;
   num_rootnodes = 0;
   gl = gn_tree.root_list;
   while (gl)
@@ -200,7 +200,7 @@ ostream &operator << (ostream &s, const GN_TREE &gn_tree)
     num_rootnodes++;
     gl = gl->next;
   }
-  s << num_rootnodes << endl;
+  s << num_rootnodes << std::endl;
   s << gn_tree.last_id;
   gl = gn_tree.root_list;
   while (gl)
@@ -212,7 +212,7 @@ ostream &operator << (ostream &s, const GN_TREE &gn_tree)
 }
 
 
-static int istream_gn_subtree(GN_TREE *gtree, istream &s)
+static int istream_gn_subtree(GN_TREE *gtree, std::istream &s)
 {
   GN_NODE_ID id, ancestor_id;
   GN_NODE *gn, *gn1;
@@ -222,15 +222,15 @@ static int istream_gn_subtree(GN_TREE *gtree, istream &s)
   char *gbuf;
 
   if (!s.good())
-         cerr << "gnlib warning: reading subtree from stream that is not good" << endl;
+    std::cerr << "gnlib warning: reading subtree from stream that is not good" << std::endl;
   s >> id;
   s >> ancestor_id;
   if (!gn_defined_id(&ancestor_id))
   {
     if ((return_code = gn_add_treenode(gtree, &id, NULL, &gn)) < 0)
     {
-      cerr << "Problems adding node to tree in istream_gn_subtree [NULL] (code " << return_code << ')' << endl;
-      cerr << id;
+      std::cerr << "Problems adding node to tree in istream_gn_subtree [NULL] (code " << return_code << ')' << std::endl;
+      std::cerr << id;
       return (return_code);
     }
   }
@@ -238,8 +238,8 @@ static int istream_gn_subtree(GN_TREE *gtree, istream &s)
   {
     if ((return_code = gn_add_treenode(gtree, &id, &ancestor_id, &gn)) < 0)
     {
-      cerr << "Problems adding node to tree in istream_gn_subtree [ancestor] (code " << return_code << ')' << endl;
-      cerr << id;
+      std::cerr << "Problems adding node to tree in istream_gn_subtree [ancestor] (code " << return_code << ')' << std::endl;
+      std::cerr << id;
       return (return_code);
     }
   }
@@ -251,12 +251,12 @@ static int istream_gn_subtree(GN_TREE *gtree, istream &s)
   s >> gn->lifespan;
   s >> num_alive;
   if ((num_offspring == 0) && (gn->lifespan != GN_STILL_ALIVE))
-         cerr << "found a dead node with no offspring" << endl;
+    std::cerr << "found a dead node with no offspring" << std::endl;
   if (gn->lifespan == GN_STILL_ALIVE)
   {
     if ((return_code = gn_addtonlist(&(gtree->alive_list), gn)) < 0)
     {
-      cerr << "Problems adding node to living nodes list" << endl;
+      std::cerr << "Problems adding node to living nodes list" << std::endl;
       gn_remove_treenode(gtree, gn);
       return (return_code);
     }
@@ -293,15 +293,15 @@ static int istream_gn_subtree(GN_TREE *gtree, istream &s)
     if ((return_code = istream_gn_subtree(gtree, s)) < 0)
       return (return_code);
   }
-  // cerr << "Successfully read node" << endl;
-  // cerr << "    branch_generation: " << gn1->branch_generation << endl;
-  // cerr << "    num_offspring: " << num_offspring <<  endl;
-  // cerr << "    lifespan: " << gn1->lifespan << endl;
+  // std::cerr << "Successfully read node" << std::endl;
+  // std::cerr << "    branch_generation: " << gn1->branch_generation << std::endl;
+  // std::cerr << "    num_offspring: " << num_offspring <<  std::endl;
+  // std::cerr << "    lifespan: " << gn1->lifespan << std::endl;
   return (0);
 }
 
 
-istream &operator >> (istream &s, GN_TREE &gn_tree)
+std::istream &operator >> (std::istream &s, GN_TREE &gn_tree)
 {
   GN_NODELIST_ELEMENT *gl;
   long expect_num_nodes, expect_num_alive, num_rootnodes, i;
@@ -309,7 +309,7 @@ istream &operator >> (istream &s, GN_TREE &gn_tree)
   char buf[256], c;
 
   if (!s.good())
-    cerr << "gnlib warning: reading tree from stream that is not good" << endl;
+    std::cerr << "gnlib warning: reading tree from stream that is not good" << std::endl;
   gn_init_tree(&gn_tree);
   do
   {
@@ -319,22 +319,22 @@ istream &operator >> (istream &s, GN_TREE &gn_tree)
     while (c != '\n');
   }
   while (strcmp(buf, "BEGIN STORED PHYLO TREE"));
-  // cerr << "*** buf: \"" << buf << "\"" << endl;
+  // std::cerr << "*** buf: \"" << buf << "\"" << std::endl;
   s >> gn_tree.pruning_strategy;
   s >> expect_num_nodes;
-  // cerr << "*** expect_num_nodes: " << expect_num_nodes << endl;
+  // std::cerr << "*** expect_num_nodes: " << expect_num_nodes << std::endl;
   s >> expect_num_alive;
-  // cerr << "*** expect_num_alive: " << expect_num_alive << endl;
+  // std::cerr << "*** expect_num_alive: " << expect_num_alive << std::endl;
   s >> num_rootnodes;
-  // cerr << "*** num_rootnodes: " << num_rootnodes << endl;
+  // std::cerr << "*** num_rootnodes: " << num_rootnodes << std::endl;
   s >> gn_tree.last_id;
-  // cerr << "GN_TREE >> last_id: generation: " << gn_tree.last_id.generation << ", id: " << gn_tree.last_id.id << endl;
+  // std::cerr << "GN_TREE >> last_id: generation: " << gn_tree.last_id.generation << ", id: " << gn_tree.last_id.id << std::endl;
   for (i = 0; i < num_rootnodes; i++)
   {
     return_code = istream_gn_subtree(&gn_tree, s);
     if (return_code < 0)
     {
-      cerr << "Problems reading phylo tree" << endl;
+      std::cerr << "Problems reading phylo tree" << std::endl;
       return (s);
     }
     if (gn_tree.root_list->next)
@@ -349,10 +349,9 @@ istream &operator >> (istream &s, GN_TREE &gn_tree)
   }
   if ((expect_num_nodes != gn_tree.num_nodes) || (expect_num_alive != gn_tree.num_alive))
   {
-    cerr << "Problems reading GN_TREE" << endl;
-    cerr << "num_nodes: expected: " << expect_num_nodes << " found: " << gn_tree.num_nodes << endl;
-    cerr << "num_alive: expected: " << expect_num_alive << " found: " << gn_tree.num_alive << endl;
+    std::cerr << "Problems reading GN_TREE" << std::endl;
+    std::cerr << "num_nodes: expected: " << expect_num_nodes << " found: " << gn_tree.num_nodes << std::endl;
+    std::cerr << "num_alive: expected: " << expect_num_alive << " found: " << gn_tree.num_alive << std::endl;
   }
   return (s);
 }
-
