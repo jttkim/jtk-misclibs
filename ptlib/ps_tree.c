@@ -537,7 +537,10 @@ int phyl_pstree(FILE *f, const PHYLTREE *tree, double x0, double y0, double widt
   if (fontsize > psinfo->max_fontsize)
     fontsize = psinfo->max_fontsize;
   if (psinfo->print_leafnames)
-    leafname_height = (phyl_max_nodenamelength(tree, psinfo->attrlist) + 2) * fontsize * 0.8;
+  {
+    /* FIXME: glyph width:height ratio hard-coded to 0.5 */
+    leafname_height = (phyl_max_nodenamelength(tree, psinfo->attrlist) + 2) * fontsize * 0.5;
+  }
   else
     leafname_height = 0.0;
   if (psinfo->tree_height < 0.0)
@@ -729,4 +732,3 @@ int phyl_ps_utree(FILE *f, const PHYLTREE *tree, double x0, double y0, double wi
   fprintf(f, "restore\n");
   return (0);
 }
-
