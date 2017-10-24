@@ -23,7 +23,7 @@ static int read_treestring(TREE_SOURCE *ts)
   for (i = strlen(ts->s); i && iscntrl(ts->s[i]); i--)
     ts->s[i] = '\0';
   ts->pos = 0;
-  /* printf("got string: \"%s\"\n", ts->s); */
+  /* fprintf(stderr, "got string: \"%s\"\n", ts->s); */
   return (0);
 }
 
@@ -58,7 +58,7 @@ static int get_nodename(TREE_SOURCE *ts, PHYLTREE_NODE *node)
       node->name[n++] = ts->s[ts->pos++];
   }
   node->name[n] = '\0';
-  /* printf("got node name \"%s\"\n", node->name); */
+  /* fprintf(stderr, "got node name \"%s\"\n", node->name); */
   return (0);
 }
 
@@ -91,7 +91,7 @@ static int get_branchlength(TREE_SOURCE *ts, PHYLTREE_NODE *node)
     node->length = 0.0;
     return (PHYLERR_PARSE);
   }
-  /* printf("got branch length %f\n", node->length); */
+  /* fprintf(stderr, "got branch length %f\n", node->length); */
   return (0);
 }
 
@@ -160,7 +160,7 @@ static int read_node(TREE_SOURCE *ts, PHYLTREE_NODE *root, PHYLTREE *tree)
       break;
     case ',':
       ts->pos++;
-      /* printf("found node separator\n"); */
+      /* fprintf(stderr, "found node separator\n"); */
       if ((node = add_node(root)) == NULL)
       {
         fprintf(stderr, "error: out of memory\n");
@@ -170,7 +170,7 @@ static int read_node(TREE_SOURCE *ts, PHYLTREE_NODE *root, PHYLTREE *tree)
       lengthinfo_present = 0;
       break;
     case '(':
-      /* printf("found_subtree\n"); */
+      /* fprintf(stderr, "found_subtree\n"); */
       if ((ret_code = read_node(ts, node, tree)) < 0)
         return (ret_code);
       break;
@@ -236,4 +236,3 @@ int phyl_read_tree(FILE *f, PHYLTREE *tree)
   }
   return (0);
 }
-

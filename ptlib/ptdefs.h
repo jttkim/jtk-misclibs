@@ -3,7 +3,7 @@
 
 #include <stdio.h>  /* for NULL */
 
-#define PHYL_MAX_NODENAMELENGTH    31
+#define PHYL_MAX_NODENAMELENGTH  1023
 #define PHYL_MAX_SLEN          100000
 #define PHYL_PRINTNAME_LENGTH     256
 #define PHYL_SPECNAME_LENGTH      256
@@ -31,4 +31,3 @@
 #define DEFAULT_LEAFATTRIBUTES { NULL, "", "", "", "", 0.0, 0.0, 0.0, -1.0, -1.0, -1.0 }
 
 #endif
-
