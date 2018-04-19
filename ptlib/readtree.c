@@ -175,34 +175,37 @@ static int read_node(TREE_SOURCE *ts, PHYLTREE_NODE *root, PHYLTREE *tree)
         return (ret_code);
       break;
     default:
-      /* printf("found leaf\n"); */
+      /* fprintf(stderr, "found leaf, %d descendants\n", node->num_descendants); */
       if ((ret_code = get_nodename(ts, node)) < 0)
       {
         fprintf(stderr, "error: invalid node name\n");
         fprint_treestring(stderr, ts);
         return (ret_code);
       }
-      if (tree->num_leaves)
+      if (node->num_descendants == 0)
       {
-        if ((leaf = (PHYLTREE_NODE **) realloc(tree->leaf, (tree->num_leaves + 1) * sizeof(PHYLTREE_NODE *))) == NULL)
+        if (tree->num_leaves)
         {
-          fprintf(stderr, "error: out of memory\n");
-          return (PHYLERR_MEM);
+          if ((leaf = (PHYLTREE_NODE **) realloc(tree->leaf, (tree->num_leaves + 1) * sizeof(PHYLTREE_NODE *))) == NULL)
+          {
+            fprintf(stderr, "error: out of memory\n");
+            return (PHYLERR_MEM);
+          }
+          tree->leaf = leaf;
         }
-        tree->leaf = leaf;
-      }
-      else
-      {
-        if ((tree->leaf = (PHYLTREE_NODE **) malloc(sizeof(PHYLTREE_NODE *))) == NULL)
+        else
         {
-          fprintf(stderr, "error: out of memory\n");
-          return (PHYLERR_MEM);
+          if ((tree->leaf = (PHYLTREE_NODE **) malloc(sizeof(PHYLTREE_NODE *))) == NULL)
+          {
+            fprintf(stderr, "error: out of memory\n");
+            return (PHYLERR_MEM);
+          }
         }
+        tree->leaf[tree->num_leaves] = node;
+        node->leaf_index = tree->num_leaves;
+        /* printf("added leaf \"%s\"\n", tree->leaf[tree->num_leaves]->name); */
+        tree->num_leaves++;
       }
-      tree->leaf[tree->num_leaves] = node;
-      node->leaf_index = tree->num_leaves;
-      /* printf("added leaf \"%s\"\n", tree->leaf[tree->num_leaves]->name); */
-      tree->num_leaves++;
     }
   }
   tree->lengthinfo_complete &= lengthinfo_present;
