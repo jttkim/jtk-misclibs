@@ -357,7 +357,7 @@ static void draw_unode_ps(FILE *f, const PHYLTREE_NODE *node, double xpos, doubl
             fontheight, psinfo);
     angle_descendant = fmod(angle_descendant + ar_descendant * 0.5, 2 * PI);
   }
-  if (psinfo->print_leafnames && node->name[0])
+  if (psinfo->print_leafnames && node->name[0] && (psinfo->print_internal_names || node->num_descendants == 0))
   {
     fprintf(f, "gsave\n");
     switch (psinfo->print_leafnames)
