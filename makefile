@@ -1,9 +1,10 @@
 # master makefile for the libraries of Jan T. Kim
 
-.PHONY : install genomelib gnlib jklib gfaport ptlib wndhndlr clean
+.PHONY : sysinstall install genomelib gnlib jklib gfaport ptlib wndhndlr clean
 
-LIBPATH	= $(HOME)/lib
-INCLUDEPATH = $(HOME)/include
+# PREFIX = $(HOME)
+LIBPATH	= $(PREFIX)/lib
+INCLUDEPATH = $(PREFIX)/include
 
 # The LIBPREFIX and LIBPOSTFIX might be changed for systems other
 # than Unix, e.g. Atari TOS systems.
@@ -29,7 +30,7 @@ LIBRARIES = $(LIBPREFIX)genome$(LIBPOSTFIX) \
 	    $(LIBPREFIX)ptlib$(LIBPOSTFIX) \
 	    $(LIBPREFIX)whndlr$(LIBPOSTFIX)
 
-MAKEARGS = CC='$(CC)' CCXX='$(CCXX)' AR='$(AR)' OPT='$(OPT)' LIBPATH='$(LIBPATH)' INCLUDEPATH='$(INCLUDEPATH)' LINDEVOL_BINDIR='$(LINDEVOL_BINDIR)'
+MAKEARGS = PREFIX='$(PREFIX)' CC='$(CC)' CCXX='$(CCXX)' AR='$(AR)' OPT='$(OPT)' LIBPATH='$(LIBPATH)' INCLUDEPATH='$(INCLUDEPATH)' LINDEVOL_BINDIR='$(LINDEVOL_BINDIR)'
 
 install : genomelib gnlib jklib gfaport ptlib wndhndlr
 
